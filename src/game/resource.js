@@ -52,9 +52,12 @@ class Resource {
         this.water = water;
     }
 
-    setRace(raceType) {
+    setRace(raceType, index) {
         this.type = ResourceTypes().keys.race;
-        this.race = raceType;
+        this.race = {
+            type: raceType,
+            index: index
+        };
         this.flagOpen = true;
     }
 

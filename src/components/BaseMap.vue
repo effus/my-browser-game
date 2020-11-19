@@ -6,7 +6,7 @@
                     :id="'cell-' + y + '-' + x" 
                     :key="x + '.' + y"
                     :type="resource.flagOpen ? resource.type : 0"
-                    :race="resource.race"
+                    :race="resource.race ? resource.race.type : null"
                     :x="x"
                     :y="y"
                     v-on:click="onCellClick"
@@ -37,7 +37,7 @@ export default {
     },
     methods: {
         onCellClick(cell) {
-            console.debug('click', cell);
+            this.$emit('select', cell);
         }
     }
 }

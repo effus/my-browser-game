@@ -7,6 +7,7 @@ class Game {
 
     constructor(options) {
         this.options = options;
+        this.races = [];
         this.generate();
     }
 
@@ -52,7 +53,9 @@ class Game {
         if (y >= this.mapSize.height) {
             y = this.mapSize.height - 1;
         }
-        this.grid[x][y].setRace(this.randomizer(RaceTypes().index.length - 1));
+        const raceType = this.randomizer(RaceTypes().index.length - 1);
+        this.grid[x][y].setRace(raceType, i);
+        this.races.push(new Race(raceType));
     }
 }
 
