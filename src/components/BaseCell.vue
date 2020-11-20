@@ -1,5 +1,8 @@
 <template>
-    <span :class="getClass" @click="onClick"></span>
+    <div class="cell" :class="getClass" @click="onClick">
+        <span class="progress"></span>
+    </div>
+    
 </template>
 
 <script>
@@ -11,25 +14,42 @@ export default {
             type: Number,
             default: null
         },
-        race: {
+        isBase: {
+            type: Boolean,
+            default: false
+        },
+        baseRaceType: {
             type: Number|Object,
             default: null
-        },        
+        },
+        ownerIndex: {
+            type: Number|Object,
+            default: null
+        },
         x: {
             type: Number
         },
         y: {
             type: Number
+        },
+        progress: {
+            type: Number,
+            default: 0
         }
     },
     computed: {
         getClass() {
             let r = [];
             r.push(ResourceTypes().list[this.type]);
-            if (this.race !== null) {
-                r.push(RaceTypes().index[this.race]);
+            if (this.isBase) {
+                r.push(RaceTypes().index[this.baseRaceType]);
             }
             return r;
+        },
+        getProgressStyle() {
+            // 100 == 30px
+            // 2 == 2*30/100
+            return 'top: ' + (30 - this.progress * 0.01 * 30) + 'px';
         }
     },
     methods: {
@@ -38,8 +58,8 @@ export default {
                 x: this.x,
                 y: this.y,
                 type: this.type,
-                race: this.race
-
+                ownerIndex: this.ownerIndex,
+                baseRaceType: this.baseRaceType
             });
         }
     }
@@ -47,9 +67,14 @@ export default {
 </script>
 
 <style lang="scss">
+.cell {
+    font-size: 12px;
+    position: relative;
+    overflow: hidden;
+}
 .shadow {
-        background-color: #000;
-    }
+    background-color: #000;
+}
 .woods {
     background-image: url('../assets/icons/log.svg');
     background-color: rgb(185, 182, 0);
@@ -117,4 +142,16 @@ export default {
         background-image: url('../assets/icons/bee.svg');
     }
 }
+.progress {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    background: linear-gradient(to top, rgba(255, 255, 255, 0), #00c029);
+}
+
 </style>

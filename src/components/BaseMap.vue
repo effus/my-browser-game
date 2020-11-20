@@ -6,7 +6,9 @@
                     :id="'cell-' + y + '-' + x" 
                     :key="x + '.' + y"
                     :type="resource.flagOpen ? resource.type : 0"
-                    :race="resource.race ? resource.race.type : null"
+                    :isBase="typeof resource.baseOfRace !== 'undefined'"
+                    :baseRaceType="getRaceType(resource.baseOfRace)"
+                    :ownerIndex="resource.ownerRace"
                     :x="x"
                     :y="y"
                     v-on:click="onCellClick"
@@ -27,6 +29,10 @@ export default {
         map: {
             type: Array,
             default: () => []
+        },
+        races: {
+            type: Array,
+            default: () => []
         }
     },
     computed: {
@@ -38,6 +44,12 @@ export default {
     methods: {
         onCellClick(cell) {
             this.$emit('select', cell);
+        },
+        getRaceType(baseOfRace) {
+            if (typeof baseOfRace !== 'undefined') {
+                return this.races[baseOfRace].type;
+            }
+            
         }
     }
 }
