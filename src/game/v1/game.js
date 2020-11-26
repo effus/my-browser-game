@@ -18,9 +18,9 @@ class Game {
     }
 
     new() {
-        for (let i=0; i < this.options.racesCount; i++) {
+        /*for (let i=0; i < this.options.racesCount; i++) {
             this.addRace(i, this.options.racesCount);
-        }
+        }*/
     }
 
     get isGenerating() {
@@ -28,7 +28,7 @@ class Game {
     }
 
     addRace(i, n) {
-        const raceType = Helper.randomizer(RaceTypes().index.length - 1);
+        /*const raceType = Helper.randomizer(RaceTypes().index.length - 1);
         const raceColor = Helper.randomizer(RaceTypes().colors.length - 1);
         this.map.setRaceBase(i, n, raceType);
         this.races.push(new Race(
@@ -37,7 +37,7 @@ class Game {
                 this.options.population, 
                 this.options.ageLimit
             )
-        );
+        );*/
     }
 
     newYear() {

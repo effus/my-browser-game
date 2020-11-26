@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import {RaceTypes} from '../game/race.js';
+import {RaceTypes} from '../game/v2/race.js';
 import BaseInfoResource from './BaseInfoResource.vue';
 export default {
     components: {
@@ -64,7 +64,7 @@ export default {
     },
     computed: {
         typeName() {
-            let name = 'Shadow';
+            let name = '';
             if (this.isRace) {
                 name = this.selected.race.name;
             } 
@@ -74,7 +74,7 @@ export default {
             return this.selected.cell && this.selected.cell.flagOpen ? this.selected.cell.type > 1 : false;
         },
         isRace() {
-            return this.selected.cell && this.selected.cell.flagOpen ? this.selected.cell.type === 1 : false;
+            return this.selected.race ? true : false;
         }
     }
 }

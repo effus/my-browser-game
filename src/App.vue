@@ -3,7 +3,7 @@
     <base-info :selected="selected" :year="game ? game.year : 0"></base-info>
     <base-options v-if="!game" v-on:setup="onSetup"></base-options>
     <base-loading v-if="game && game.isGenerating"></base-loading>
-    <base-map v-if="game && !game.isGenerating" :map="game.map.mapGrid" :races="game.races" v-on:select="onSelect"></base-map>
+    <base-map v-if="game" :width="game.mapSize.width" :height="game.mapSize.height"></base-map>
     <div class="debug" v-if="false">{{game}}</div>
   </div>
 </template>
@@ -14,7 +14,8 @@ import BaseOptions from './components/BaseOptions.vue';
 import BaseLoading from './components/BaseLoading.vue';
 import BaseMap from './components/BaseMap.vue';
 import BaseInfo from './components/BaseInfo.vue';
-import Game from './game/game.js';
+import Game from './game/v2/game.js';
+import Bus from './game/bus.js';
 
 export default {
   name: 'App',
@@ -35,31 +36,40 @@ export default {
   },
   mounted() {
     // sample
-    this.game = new Game({
-      mapSizeWidth: 12,
-      mapSizeHeight: 12,
-      racesCount: 2,
-      population: 10,
-      ageLimit: 90
-    });
+    this.game = new Game(
+      {
+        mapSizeWidth: 12,
+        mapSizeHeight: 12,
+        racesCount: 2,
+        initialPopulationSize: 10,
+        ageLimit: 90
+      }
+    );
+    Bus.$on('show-info', this.onSelect);
   },
   methods: {
     onSetup(payload) {
       this.options = payload;
       this.game = new Game(payload);
     },
-    onSelect(item) {
-      this.selected.cell = this.game.map.grid[item.y][item.x];
-      console.log('onSelect', item, this.selected);
-      if (this.selected.cell.type === 1) {
-        this.selected.race = this.game.races[this.selected.cell.baseOfRace];
+    onSelect(payload) {
+      this.selected.cell = payload.cell;
+      console.log('onSelect', payload);
+      if (payload.race) {
+        this.selected.race = payload.race;
       }
     },
     newYear() {
-      if (!this.game) {
+      this.game.newYear();
+      /*if (!this.game) {
         return;
       }
       this.game.newYear();
+      if (this.game.year === 1) {
+        this.$bus.$emit('start');
+      } else {
+        this.$bus.$emit('race-get-stat');
+      }*/
     }
   }
 }

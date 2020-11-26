@@ -1,14 +1,10 @@
 <template>
     <div class="map" :style="gridStyle">
-        <template v-for="(row, y) in map">
-            <template v-for="(resource, x) in row">
+        <template v-for="(_, y) in mapItems">
+            <template v-for="(_, x) in rowItems">
                 <base-cell 
                     :id="'cell-' + y + '-' + x" 
                     :key="x + '.' + y"
-                    :type="resource.flagOpen ? resource.type : 0"
-                    :isBase="typeof resource.baseOfRace !== 'undefined'"
-                    :baseRaceType="getRaceType(resource.baseOfRace)"
-                    :ownerIndex="resource.ownerRace"
                     :x="x"
                     :y="y"
                     v-on:click="onCellClick"
@@ -20,36 +16,36 @@
 
 <script>
 
-import {ResourceTypes} from '../game/resource.js';
+//import {ResourceTypes} from '../game/resource.js';
 import BaseCell from './BaseCell.vue';
 
 export default {
     components: {BaseCell},
     props: {
-        map: {
-            type: Array,
-            default: () => []
+        width: {
+            type: Number,
+            default: 0
         },
-        races: {
-            type: Array,
-            default: () => []
+        height: {
+            type: Number,
+            default: 0
         }
     },
     computed: {
         gridStyle() {
-            return 'grid-template-columns: repeat(' + this.map[0].length + ', 30px);' + 
-            'grid-template-rows: repeat(' +this.map.length+ ', 30px);';
+            return 'grid-template-columns: repeat(' + this.width + ', 30px);' + 
+            'grid-template-rows: repeat(' + this.height + ', 30px);';
+        },
+        mapItems() {
+            return Array(this.height).fill(0);
+        },
+        rowItems() {
+            return Array(this.width).fill(0);
         }
     },
     methods: {
         onCellClick(cell) {
             this.$emit('select', cell);
-        },
-        getRaceType(baseOfRace) {
-            if (typeof baseOfRace !== 'undefined') {
-                return this.races[baseOfRace].type;
-            }
-            
         }
     }
 }
