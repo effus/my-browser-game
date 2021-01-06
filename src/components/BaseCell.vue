@@ -1,11 +1,11 @@
 <template>
-    <div class="cell" :class="getClass" @click="onClick">
+    <div class="cell" :class="styles" @click="onClick">
         <span class="progress"></span>
     </div>
-    
 </template>
 
 <script>
+import CellEngine from '../game/v3/cell-engine';
 import {mixin as VueTimers} from 'vue-timers';
 import Bus from '../game/bus.js';
 
@@ -17,45 +17,50 @@ export default {
         },
         y: {
             type: Number
+        },
+        size: {
+            type: Number,
+            default: 30
         }
     },
     data() {
         return {
-            race: null,
-            resource: null,
-            isOpen: false,
-            progress: 0
-        }
-    },
-    computed: {
-        getClass() {
-            let r = [];
-            if (!this.isOpen) {
-                r.push('shadow');
-            }
-            if (this.race) {
-                r.push('race');
-                r.push(RaceTypes().index[this.race.type]);
-            }
-            return r;
-        },
-        getProgressStyle() {
-            return 'top: ' + (30 - this.progress * 0.01 * 30) + 'px';
+            cellEngine: null,
+            styles: ''
         }
     },
     mounted() {
+        this.cellEngine = new CellEngine({x: this.x, y: this.y});
+        Bus.$on('set-race-base-cell', this.onSetRaceBaseCell);
+        this.updateStyles();
     },
     timers: {
         //update: { time: 5000, autostart: false, repeat: true }
     },
     methods: {
+        updateStyles() {
+            this.styles = this.cellEngine.getStyles();
+        },
+        onSetRaceBaseCell(payload) {
+            if (this.cellEngine.checkCoords(payload.coords)) {
+                console.log('onSetRaceBaseCell', payload);
+                this.cellEngine.changeToRace(payload.raceId, payload.raceType, payload.color);
+            }
+            this.updateStyles();
+        },
         onClick() {
-            Bus.$emit('show-info', {
+            /*Bus.$emit('show-info', {
                 race: this.race,
                 cell: {x: this.x, y: this.y}
-            });
+            });*/
         },
         
+    },
+    
+    computed: {
+        getProgressStyle() {
+            //return 'top: ' + (this.size - this.progress * 0.01 * this.size) + 'px';
+        }
     }
 }
 </script>
@@ -139,6 +144,15 @@ export default {
     }
     &.bee {
         background-image: url('../assets/icons/bee.svg');
+    }
+    &.white {
+        background-color: #fff;
+    }
+    &.grey {
+        background-color: #ccc;
+    }
+    &.red {
+        background-color: #ffa3a3;
     }
 }
 .progress {

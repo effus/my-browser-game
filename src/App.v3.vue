@@ -3,7 +3,7 @@
     <!-- base-info :object="selectedObject"></base-info -->
     <!-- base-options v-if="!game" v-on:setup="onSetup"></base-options -->
     <!-- base-loading v-if="game && game.isGenerating"></base-loading -->
-    <base-map :width="20" :height="20"></base-map>
+    <base-map :width="map.size" :height="map.size"></base-map>
     <!-- div class="debug" v-if="false">{{game}}</div -->
   </div>
 </template>
@@ -12,17 +12,23 @@
 import {mixin as VueTimers} from 'vue-timers';
 import BaseMap from './components/BaseMap.vue';
 import BaseInfo from './components/BaseInfo.vue';
+import GameEngine from './game/v3/game-engine';
+
 export default {
     components: {BaseMap,BaseInfo},
     mixins: [VueTimers],
     data: () => {
         return {
-            selectedObject: null,
-            game: null
+            map: {
+              raceCount: 2,
+              size: 20
+            },
+            info: null,
+            gameEngine: null
         }
     },
     mounted() {
-        
+        this.gameEngine = new GameEngine(this.map.raceCount, this.map.size);
     }
 }
 </script>

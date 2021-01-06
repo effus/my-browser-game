@@ -1,5 +1,10 @@
 'use strict';
 
+import {Helper} from '../helper';
+
+/**
+ * виды ресурсов
+ */
 const ResourceTypeNames = {
     FIELD: 'field', // поле, луг
     FOREST: 'forest',
@@ -11,6 +16,9 @@ const ResourceTypeNames = {
     WATER: 'water',
 };
 
+/**
+ * класс для очков ресурсов
+ */
 class ScoreItem {
     constructor(scores) {
         this.flour = scores.flour ? scores.flour : 0; // мука
@@ -26,7 +34,10 @@ class ScoreItem {
     }
 };
 
-class TypeScores {
+/**
+ * библиотека правил получения очков за владение ячейкой-ресурсом
+ */
+class ScoresIndex {
     constructor() {
         this.scores = {};
         this.scores[ResourceTypeNames.FIELD] = new ScoreItem({
@@ -58,11 +69,28 @@ class TypeScores {
         return this.scores[type];
     }
 }
+const scoresIndex = new ScoresIndex();
 
 const getRandomType = () => {
     const types = Object.keys(ResourceTypeNames);
-    const rand = Math.floor(Math.random() * Math.floor(types.length));
+    const rand = Helper.randomizer(types.length);
     return types[rand];
 };
 
-export {ResourceTypeNames, TypeScores, getRandomType};
+/**
+ * используется на карте, соответствует ячейке-ресурсу
+ */
+class CellResourceItem {
+    constructor(resourceType) {
+        this.type = resourceType;
+        if (typeof resourceType === 'undefined') {
+            this.type = getRandomType();
+        }
+        this.score = scoresIndex.get(this.type);
+    }
+    getStyle() {
+        return this.type;
+    }
+};
+
+export {ResourceTypeNames, getRandomType, CellResourceItem};
