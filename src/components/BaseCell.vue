@@ -8,10 +8,7 @@
 <script>
 import {mixin as VueTimers} from 'vue-timers';
 import Bus from '../game/bus.js';
-import { Race, RaceTypes } from '../game/v2/race.js';
-//import {RaceTypes} from '../game/race.js';
-import { ResourceTypes } from '../game/v2/resource.js';
-//import MapCell from '../game/v2/mapCell.js';
+
 export default {
     mixins: [VueTimers],
     props: {
@@ -43,18 +40,13 @@ export default {
             return r;
         },
         getProgressStyle() {
-            // 100 == 30px
-            // 2 == 2*30/100
             return 'top: ' + (30 - this.progress * 0.01 * 30) + 'px';
         }
     },
     mounted() {
-        Bus.$on('create-race', this.onCreateRace);
-        Bus.$on('find-neibour', this.onSearchNeibour);
-        Bus.$on('i-am-neibour', this.onNeibourResponse);
     },
     timers: {
-        update: { time: 5000, autostart: false, repeat: true }
+        //update: { time: 5000, autostart: false, repeat: true }
     },
     methods: {
         onClick() {
@@ -63,36 +55,7 @@ export default {
                 cell: {x: this.x, y: this.y}
             });
         },
-        onCreateRace(payload) {
-            if (this.x === payload.coordinates.x && this.y === payload.coordinates.y) {
-                this.race = new Race(
-                    payload.raceType,
-                    payload.colorIndex,
-                    payload.initialPopulation,
-                    100
-                );
-                this.isOpen = true;
-                this.$timer.start('update');
-                this.race.setOwnMapPoint(this.x, this.y, 'base');
-            }
-        },
-        onGameStart() {
-            console.log('game started');
-        },
-        update() {
-            this.race.update();
-            const checkCoords = this.race.getCoordinatesToCheck();
-            /*Bus.$emit('find-neibor', {
-                x: this.x,
-                y: this.y
-            });*/
-        },
-        onSearchNeibour(payload) {
-
-        },
-        onNeibourResponse(payload) {
-
-        }
+        
     }
 }
 </script>
@@ -102,6 +65,11 @@ export default {
     font-size: 12px;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border-right: 1px solid #232222;
+    border-bottom: 1px solid #111;
 }
 .shadow {
     background-color: #000;

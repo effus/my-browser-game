@@ -16,7 +16,6 @@
 
 <script>
 
-//import {ResourceTypes} from '../game/resource.js';
 import BaseCell from './BaseCell.vue';
 
 export default {
@@ -29,12 +28,16 @@ export default {
         height: {
             type: Number,
             default: 0
+        },
+        cellWidth: {
+            type: Number,
+            default: 30
         }
     },
     computed: {
         gridStyle() {
-            return 'grid-template-columns: repeat(' + this.width + ', 30px);' + 
-            'grid-template-rows: repeat(' + this.height + ', 30px);';
+            return 'grid-template-columns: repeat(' + this.width + ', ' + this.cellWidth + 'px);' + 
+            'grid-template-rows: repeat(' + this.height + ', ' + this.cellWidth + 'px);';
         },
         mapItems() {
             return Array(this.height).fill(0);

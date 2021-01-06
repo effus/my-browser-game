@@ -83,6 +83,7 @@ export default {
 <style lang="scss">
 .info {
     width: 100%;
+    height: 200px;
     display: grid;
     grid-template-columns: 3fr 1fr 9fr;
     .race {
