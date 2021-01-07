@@ -2,6 +2,10 @@
 import Bus from '../bus';
 import {Race, Races} from './race';
 
+if (typeof window.Bus === 'undefined') {
+    window.Bus = Bus;
+}
+
 class GameEngine {
     constructor(raceCount, mapSize) {
         this.races = new Races();
@@ -9,7 +13,7 @@ class GameEngine {
         for (let i = 0; i < raceCount; i++) {
             const race = new Race(i, raceCount, mapSize);
             this.races.add(race);
-            Bus.$emit('set-race-base-cell', {
+            window.Bus.$emit('set-race-base-cell', {
                 raceId: i,
                 coords: race.coords,
                 raceType: race.type,
@@ -25,19 +29,40 @@ class GameEngine {
         }
         this.isTickInProgress = true;
         for (let i in this.races.list) {
-            const next = this.races.get(i).whatNext();
-            if (next.process) {
-                // increment
-                Bus.$emit('cell-process', {
-                    raceId: i,
-                    coords: next.target,
-                    process: next.process,
-                    increment: next.increment
-                });
-            } else {
-                // find target
-                
+            let next = this.races.get(i).whatNext(); // get a target from previous tick
+            if (!next.process) {
+                // no processed targets
+                const target = this.races.get(i).getTarget();
+                if (target !== null) {
+                    // have some targets in stack, collected by 'i-am-next' response and sorted by
+                    // coordinates and preferences
+                    next = {
+                        target: target.coords,
+                        process: target.process,
+                        increment: 0
+                    };
+                    this.races.get(i).setProcess(target.process, target.coords);
+                    this.races.get(i).clearStack();
+                } else {
+                    console.log('race ' + i + ' sends who-is-next');
+                    window.Bus.$emit('who-is-next', {
+                        raceId: i,
+                        coords: this.races.get(i).coords
+                    });
+                    continue;
+                }
             }
+            // process target
+            window.Bus.$emit('cell-process', {
+                raceId: i,
+                coords: next.target,
+                process: next.process,
+                increment: next.increment
+            });
+            // collect resources from processed targets
+            window.Bus.$emit('get-resources', {
+                raceId: i
+            });
         }
         this.isTickInProgress = false;
     }

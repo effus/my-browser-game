@@ -13,6 +13,10 @@ import {mixin as VueTimers} from 'vue-timers';
 import BaseMap from './components/BaseMap.vue';
 import BaseInfo from './components/BaseInfo.vue';
 import GameEngine from './game/v3/game-engine';
+import Bus from './game/bus';
+if (typeof window.Bus === 'undefined') {
+    window.Bus = Bus;
+}
 
 export default {
     components: {BaseMap,BaseInfo},
@@ -24,18 +28,31 @@ export default {
               size: 20
             },
             info: null,
-            gameEngine: null
+            gameEngine: null,
+            tickCounter: 0
         }
     },
     mounted() {
         this.gameEngine = new GameEngine(this.map.raceCount, this.map.size);
+        window.Bus.$on('global-error', this.onGlobalError);
     },
     timers: {
-        nextTick: { time: 5000, autostart: true, repeat: false }
+        nextTick: { time: 5000, autostart: true, repeat: true }
     },
     methods: {
       nextTick() {
-        this.gameEngine.nextTick();
+        try {
+          this.tickCounter++;
+          console.log('nextTick started', this.tickCounter);
+          this.gameEngine.nextTick();
+        } catch (e) {
+          this.$timer.stop('nextTick');
+          console.error('tick stopped', e);
+        }
+      },
+      onGlobalError(e) {
+        console.error('Global error', e);
+        this.$timer.stop('nextTick');
       }
     }
 }

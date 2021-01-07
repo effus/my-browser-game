@@ -20,6 +20,9 @@ const Helper = {
         const colors = ['grey', 'white', 'red'];
         const rand = this.randomizer(colors.length);
         return colors[rand];
+    },
+    calculateDistantion(point1, point2) {
+        return Math.sqrt( Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2) , 2);;
     }
 }
 

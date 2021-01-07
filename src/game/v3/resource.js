@@ -93,4 +93,14 @@ class CellResourceItem {
     }
 };
 
-export {ResourceTypeNames, getRandomType, CellResourceItem};
+
+/**
+ * типы ячеек
+ */
+const CellTypes = {
+    SHADOW: 'shadow',
+    RACE: 'race',
+    RESOURCE: 'resource'
+};
+
+export {ResourceTypeNames, getRandomType, CellResourceItem, CellTypes};

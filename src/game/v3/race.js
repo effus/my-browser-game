@@ -1,4 +1,10 @@
 import {Helper} from '../helper';
+import Bus from '../bus.js';
+import { CellTypes } from './resource';
+
+if (typeof window.Bus === 'undefined') {
+    window.Bus = Bus;
+}
 
 const RaceTypes = {
     BEAR: 'bear',
@@ -26,6 +32,7 @@ const getRandomType = () => {
     const rand = Helper.randomizer(types.length);
     return RaceTypes[types[rand]];
 };
+
 
 class RaceProps {
     constructor() {
@@ -66,6 +73,13 @@ class Race {
         this.resources = [];
         this.process = null;
         this.target = null;
+        this.targetStack = [];
+        window.Bus.$on('i-am-next', (payload) => {
+            this.onCellIAmNextResponse(payload);
+        });
+        window.Bus.$on('cell-process-decline', this.onCellProcessDecline);
+        window.Bus.$on('cell-proceed', this.onCellProceed);
+        window.Bus.$on('resources-pack', this.onReceiveResourcesPack);
     }
     whatNext() {
         if (this.process === null) {
@@ -81,8 +95,118 @@ class Race {
             }
         }
     }
-    startProcess(process, target) {
+    setProcess(process, target) {
+        this.process = process;
+        this.target = target;
+    }
+    getTarget() {
 
+        const prefs = this.props.getPreferences();
+
+        const calculateMultipier = (process) => {
+            let m = 0.2;
+            for (let i in prefs) {
+                if (prefs[i] === process) {
+                    break;
+                }
+                m += 0.2;
+            }
+            return m;
+        };
+
+        if (this.targetStack.length === 0) {
+            console.log('getTarget empty');
+            return null;
+        }
+        const calculateDistantion = (point1, point2) => {
+            return Math.sqrt( Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2) , 2);;
+        }
+        let stack = this.targetStack.map((item) => {
+            return {
+                value: calculateDistantion(item.coords, this.coords) * calculateMultipier(item.process, prefs),
+                coords: item.coords,
+                process: item.process
+            }
+        });
+        stack.sort(function(before, next) {
+            return before.value - next.value;
+        });
+
+        const firstValue = stack[0].value;
+        stack = stack.filter(item => item.value <= firstValue);
+        let target = stack[0];
+        /*if (stack.length > 1) {
+            const rand = Helper.randomizer(stack.length);
+            target = stack[rand];
+        }*/
+        console.log('getTarget', target);
+        return target;
+    }
+    clearStack() {
+        this.targetStack.length = 0;
+    }
+    /**
+     * response from cell who can be processed
+     * @param payload {{
+     *      from: {*}
+     *      to: {*}
+     * }}
+     */
+    onCellIAmNextResponse(payload) {
+        if (parseInt(payload.to) !== this.id.i) {
+            return false;
+        }
+        if (parseInt(payload.from.owner) === this.id.i) {
+            return false;
+        }
+        const item = {
+            coords: payload.from.coords,
+            process: this.getProcessNameByCell(payload.from.type, payload.from.owner),
+            type: payload.from.type
+        };
+        this.targetStack.push(item);
+    }
+    /**
+     * response from cell after request 'cell-process' if cell can't be proceed;
+     * so its required to repeat find targets
+     */
+    onCellProcessDecline() {
+        this.setProcess(null, null);
+        this.clearStack();
+    }
+    /**
+     * response from cell after request 'cell-process' if cell fully proceed
+     * so its required to find new targets
+     */
+    onCellProceed() {
+        this.setProcess(null, null);
+        this.clearStack();
+    }
+    onReceiveResourcesPack(payload) {
+        //@todo
+        throw Error('not inmplemented');
+    }
+    /**
+     * define a process for target
+     * @param {*} cellType 
+     * @param {*} cellOwner 
+     */
+    getProcessNameByCell(cellType, cellOwner) {
+        if (cellType === CellTypes.SHADOW) {
+            return RaceProcesses.RESEARCH_CELL;
+        } else if (cellType === CellTypes.RESOURCE && cellOwner !== null && cellOwner !== this.id.i) {
+            const prefs = this.props.getPreferences();
+            for (let pref in prefs) {
+                if (pref === RaceProcesses.ATTACK_ENEMY) {
+                    return RaceProcesses.ATTACK_ENEMY;
+                }
+                if (pref === RaceProcesses.CONNECT_CELL) {
+                    return RaceProcesses.CONNECT_CELL;
+                }
+            }
+        } else if (cellType === CellTypes.RESOURCE) {
+            return RaceProcesses.BUILD_FABRIC;
+        }
     }
 };
 

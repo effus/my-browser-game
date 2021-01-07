@@ -9,6 +9,10 @@ import CellEngine from '../game/v3/cell-engine';
 import {mixin as VueTimers} from 'vue-timers';
 import Bus from '../game/bus.js';
 
+if (typeof window.Bus === 'undefined') {
+    window.Bus = Bus;
+}
+
 export default {
     mixins: [VueTimers],
     props: {
@@ -31,7 +35,10 @@ export default {
     },
     mounted() {
         this.cellEngine = new CellEngine({x: this.x, y: this.y});
-        Bus.$on('set-race-base-cell', this.onSetRaceBaseCell);
+        window.Bus.$on('set-race-base-cell', (p) => this.onSetRaceBaseCell(p));
+        window.Bus.$on('who-is-next', (p) => this.onWhoIsNext(p));
+        window.Bus.$on('cell-process', (p) => this.onCellProcess(p));
+        //window.Bus.$on('get-resources', (p) => this.onGetResources(p));
         this.updateStyles();
     },
     timers: {
@@ -47,6 +54,46 @@ export default {
                 this.cellEngine.changeToRace(payload.raceId, payload.raceType, payload.color);
             }
             this.updateStyles();
+        },
+        onWhoIsNext(payload) {
+            if (this.cellEngine.checkAmINext(payload.raceId) === true) {
+                window.Bus.$emit('i-am-next', {
+                    from: this.cellEngine.getSelfInfo(),
+                    to: payload.raceId
+                });
+            }
+        },
+        onCellProcess(payload) {
+            if (this.cellEngine.checkCoords(payload.coords)) {
+                try {
+                    const proceedResult = this.cellEngine.tryProceed(payload.raceId, payload.process, payload.increment);
+                    if (proceedResult === true) { // process completed
+                        window.Bus.$emit('cell-proceed', {
+                            from: this.cellEngine.getSelfInfo(),
+                            to: payload.raceId,
+                            process: payload.process
+                        });
+                    } else if (proceedResult === false) { // process declined
+                        window.Bus.$emit('cell-process-decline', {
+                            from: this.cellEngine.getSelfInfo(),
+                            to: payload.raceId,
+                            process: payload.process
+                        });
+                    }
+                } catch (e) {
+                    window.Bus.$emit('global-error', {e});
+                }
+            }
+        },
+        onGetResources(payload) {
+            const resources = this.cellEngine.getResourceForTick();
+            if (resource !== null) {
+                window.Bus.$emit('resources-pack', {
+                    from: this.cellEngine.getSelfInfo(),
+                    to: this.cellEngine.owner,
+                    resources: resources
+                });
+            }
         },
         onClick() {
             /*Bus.$emit('show-info', {

@@ -1,14 +1,5 @@
-import {CellResourceItem} from './resource';
+import {CellResourceItem, CellTypes} from './resource';
 import {CellRace} from './race';
-
-/**
- * типы ячеек
- */
-const CellTypes = {
-    SHADOW: 'shadow',
-    RACE: 'race',
-    RESOURCE: 'resource'
-};
 
 /**
  * механика для ячейки
@@ -51,11 +42,39 @@ class CellEngine {
     checkCoords(coords) {
         return this.coords.x === coords.x && this.coords.y === coords.y;
     }
-    incrementProgress(increment) {
-        this.progress += increment;
-        if (this.progress > 100) {
-            this.progress = 100;
+    checkAmINext(raceId) {
+        if (this.type = CellTypes.SHADOW) {
+            return true;
+        } else if (this.type = CellTypes.RESOURCE && this.owner !== raceId) {
+            return true;
+        } /* else if (this.type = CellTypes.RACE && this.owner !== raceId) {
+            return true;
+        }*/
+    }
+    getSelfInfo() {
+        return {
+            coords: this.coords,
+            type: this.type,
+            owner: this.owner
         }
+    }
+    /**
+     * proceed a cell on increment value
+     * if increment >= 100, process is completed (true)
+     * if process not assigned with cell type, process is declined (false)
+     * if process not finished, return value is null
+     * @param {*} raceId 
+     * @param {*} process 
+     * @param {*} increment 
+     */
+    tryProceed(raceId, process, increment) {
+        throw Error('not implemented');
+    }
+    /**
+     * calculate resources for owner
+     */
+    getResourceForTick() {
+        throw Error('not implemented');
     }
 };
 
