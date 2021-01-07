@@ -29,6 +29,14 @@ export default {
     },
     mounted() {
         this.gameEngine = new GameEngine(this.map.raceCount, this.map.size);
+    },
+    timers: {
+        nextTick: { time: 5000, autostart: true, repeat: false }
+    },
+    methods: {
+      nextTick() {
+        this.gameEngine.nextTick();
+      }
     }
 }
 </script>

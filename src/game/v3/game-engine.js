@@ -17,6 +17,29 @@ class GameEngine {
                 color: race.color
             });
         }
+        this.isTickInProgress = false;
+    }
+    nextTick() {
+        if (this.isTickInProgress) {
+            return;
+        }
+        this.isTickInProgress = true;
+        for (let i in this.races.list) {
+            const next = this.races.get(i).whatNext();
+            if (next.process) {
+                // increment
+                Bus.$emit('cell-process', {
+                    raceId: i,
+                    coords: next.target,
+                    process: next.process,
+                    increment: next.increment
+                });
+            } else {
+                // find target
+                
+            }
+        }
+        this.isTickInProgress = false;
     }
 };
 

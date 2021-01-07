@@ -20,6 +20,7 @@ class CellEngine {
         this.race = null;
         this.resource = null;
         this.owner = null;
+        this.progress = 0;
     }
     changeToRace(i, raceType, color) {
         this.type = CellTypes.RACE;
@@ -49,6 +50,12 @@ class CellEngine {
     }
     checkCoords(coords) {
         return this.coords.x === coords.x && this.coords.y === coords.y;
+    }
+    incrementProgress(increment) {
+        this.progress += increment;
+        if (this.progress > 100) {
+            this.progress = 100;
+        }
     }
 };
 

@@ -14,6 +14,13 @@ const RaceTypes = {
     BEE: 'bee'
 };
 
+const RaceProcesses = {
+    RESEARCH_CELL: 'research_cell',
+    BUILD_FABRIC: 'build_fabric',
+    CONNECT_CELL: 'connect_cell',
+    ATTACK_ENEMY: 'attack_enemy'
+};
+
 const getRandomType = () => {
     const types = Object.keys(RaceTypes);
     const rand = Helper.randomizer(types.length);
@@ -26,6 +33,23 @@ class RaceProps {
         this.research = Helper.randomizer(10);
         this.diplomacy = Helper.randomizer(10);
         this.agressive = Helper.randomizer(10);
+        this.preferences = this.getPreferences();
+    }
+    getPreferences() {
+        let baseSort = [
+            this.hardworking + '_' + RaceProcesses.BUILD_FABRIC,
+            this.research + '_' + RaceProcesses.RESEARCH_CELL,
+            this.diplomacy + '_' + RaceProcesses.CONNECT_CELL,
+            this.agressive + '_' + RaceProcesses.ATTACK_ENEMY 
+        ];
+        baseSort.sort();
+        for (let i in baseSort) {
+            baseSort[i] = baseSort[i].replace(/[0-9]_/g, '');
+        }
+        return baseSort;
+    }
+    getIncrementForProcess(process) {
+        return this[process];
     }
 };
 
@@ -39,6 +63,26 @@ class Race {
         this.type = getRandomType();
         this.props = new RaceProps();
         this.color = Helper.getRandomColor();
+        this.resources = [];
+        this.process = null;
+        this.target = null;
+    }
+    whatNext() {
+        if (this.process === null) {
+            return {
+                process: null,
+                prefs: this.props.getPreferences()
+            }
+        } else {
+            return {
+                process: this.process,
+                target: this.target,
+                increment: this.props.getIncrementForProcess(this.process)
+            }
+        }
+    }
+    startProcess(process, target) {
+
     }
 };
 
@@ -47,13 +91,13 @@ class Race {
  */
 class Races {
     constructor() {
-        this.races = [];
+        this.list = [];
     }
     add(race) {
-        this.races.push(race);
+        this.list.push(race);
     }
     get(i) {
-        return this.races[i];
+        return this.list[i];
     }
 }
 
