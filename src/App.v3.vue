@@ -35,9 +35,14 @@ export default {
     mounted() {
         this.gameEngine = new GameEngine(this.map.raceCount, this.map.size);
         window.Bus.$on('global-error', this.onGlobalError);
+        window.Bus.$on('stop', (p) => {
+          console.log('STOPPED', p);
+          this.$timer.stop('nextTick');
+        });
+        
     },
     timers: {
-        nextTick: { time: 5000, autostart: true, repeat: true }
+        nextTick: { time: 1000, autostart: true, repeat: true }
     },
     methods: {
       nextTick() {

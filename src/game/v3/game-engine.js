@@ -34,7 +34,7 @@ class GameEngine {
                 // no processed targets
                 const target = this.races.get(i).getTarget();
                 if (target !== null) {
-                    // have some targets in stack, collected by 'i-am-next' response and sorted by
+                    // have a target, collected by 'i-am-next' response and choose by
                     // coordinates and preferences
                     next = {
                         target: target.coords,

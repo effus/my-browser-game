@@ -23,6 +23,16 @@ const Helper = {
     },
     calculateDistantion(point1, point2) {
         return Math.sqrt( Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2) , 2);;
+    },
+    calculatePreferenceMultipier(process, preferences) {
+        let m = 0.2;
+        for (let i in preferences) {
+            if (preferences[i] === process) {
+                break;
+            }
+            m += 0.2;
+        }
+        return m;
     }
 }
 

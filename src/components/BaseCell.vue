@@ -1,6 +1,6 @@
 <template>
     <div class="cell" :class="styles" @click="onClick">
-        <span class="progress"></span>
+        <span class="progress" :style="getProgressStyle"></span>
     </div>
 </template>
 
@@ -30,10 +30,12 @@ export default {
     data() {
         return {
             cellEngine: null,
-            styles: ''
+            styles: '',
+            cellProgress: 0
         }
     },
     mounted() {
+        //console.log('cell mounted');
         this.cellEngine = new CellEngine({x: this.x, y: this.y});
         window.Bus.$on('set-race-base-cell', (p) => this.onSetRaceBaseCell(p));
         window.Bus.$on('who-is-next', (p) => this.onWhoIsNext(p));
@@ -50,13 +52,14 @@ export default {
         },
         onSetRaceBaseCell(payload) {
             if (this.cellEngine.checkCoords(payload.coords)) {
-                console.log('onSetRaceBaseCell', payload);
+                //console.log('onSetRaceBaseCell', payload);
                 this.cellEngine.changeToRace(payload.raceId, payload.raceType, payload.color);
             }
             this.updateStyles();
         },
         onWhoIsNext(payload) {
             if (this.cellEngine.checkAmINext(payload.raceId) === true) {
+                //console.log('onWhoIsNext', 'send i-am-next');
                 window.Bus.$emit('i-am-next', {
                     from: this.cellEngine.getSelfInfo(),
                     to: payload.raceId
@@ -68,11 +71,20 @@ export default {
                 try {
                     const proceedResult = this.cellEngine.tryProceed(payload.raceId, payload.process, payload.increment);
                     if (proceedResult === true) { // process completed
+                        this.cellProgress = 0;
+                        this.cellEngine.changeToRandomResource();
+                        this.cellEngine.resetProgress();
+                        this.updateStyles();
+                        //console.log('onCellProcess COMPLETE!', this.cellEngine.resource);
                         window.Bus.$emit('cell-proceed', {
                             from: this.cellEngine.getSelfInfo(),
                             to: payload.raceId,
                             process: payload.process
                         });
+                        /*window.Bus.$emit('stop', {
+                            from: this.cellEngine.getSelfInfo()
+                        });*/
+                        
                     } else if (proceedResult === false) { // process declined
                         window.Bus.$emit('cell-process-decline', {
                             from: this.cellEngine.getSelfInfo(),
@@ -80,6 +92,11 @@ export default {
                             process: payload.process
                         });
                     }
+                    this.cellProgress = this.cellEngine.progress;
+                    /*console.log('onCellProcess', 
+                        'x:'+this.cellEngine.getSelfInfo().coords.x, 
+                        proceedResult, 
+                        this.cellEngine.progress);*/
                 } catch (e) {
                     window.Bus.$emit('global-error', {e});
                 }
@@ -106,7 +123,7 @@ export default {
     
     computed: {
         getProgressStyle() {
-            //return 'top: ' + (this.size - this.progress * 0.01 * this.size) + 'px';
+            return 'top: ' + (this.size - this.cellProgress * 0.01 * this.size) + 'px';
         }
     }
 }
@@ -122,41 +139,42 @@ export default {
     height: 100%;
     border-right: 1px solid #232222;
     border-bottom: 1px solid #111;
+    background-color: #909090;
 }
 .shadow {
     background-color: #000;
 }
 .woods {
     background-image: url('../assets/icons/log.svg');
-    background-color: rgb(185, 182, 0);
+    ///background-color: rgb(185, 182, 0);
 }
 .field {
     background-image: url('../assets/icons/wheat.svg');
-    background-color: rgb(217, 235, 116);
+    //background-color: rgb(217, 235, 116);
 }
 .rock {
     background-image: url('../assets/icons/gold-mine.svg');
-    background-color: rgb(197, 197, 197);
+    //background-color: rgb(197, 197, 197);
 }
 .forest {
     background-image: url('../assets/icons/fruit-tree.svg');
-    background-color: rgb(0, 167, 64);
+    //background-color: rgb(0, 167, 64);
 }
 .swamp {
     background-image: url('../assets/icons/grass.svg');
-    background-color: rgb(116, 235, 162);
+    //background-color: rgb(116, 235, 162);
 }
 .grunt {
     background-image: url('../assets/icons/plow.svg');
-    background-color: rgb(235, 174, 116);
+    //background-color: rgb(235, 174, 116);
 }
 .sand {
     background-image: url('../assets/icons/worms.svg');
-    background-color: rgb(255, 238, 182);
+    //background-color: rgb(255, 238, 182);
 }
 .water {
     background-image: url('../assets/icons/dolphin.svg');
-    background-color: rgb(0, 174, 255);
+    //background-color: rgb(0, 174, 255);
 }
 .race {
     &.mask {

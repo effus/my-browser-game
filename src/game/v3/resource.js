@@ -72,9 +72,9 @@ class ScoresIndex {
 const scoresIndex = new ScoresIndex();
 
 const getRandomType = () => {
-    const types = Object.keys(ResourceTypeNames);
-    const rand = Helper.randomizer(types.length);
-    return types[rand];
+    const typeKeys = Object.keys(ResourceTypeNames);
+    const rand = Helper.randomizer(typeKeys.length);
+    return ResourceTypeNames[typeKeys[rand]];
 };
 
 /**
@@ -103,4 +103,15 @@ const CellTypes = {
     RESOURCE: 'resource'
 };
 
-export {ResourceTypeNames, getRandomType, CellResourceItem, CellTypes};
+
+/**
+ * Виды процессов, которые может выполнять раса
+ */
+const RaceProcesses = {
+    RESEARCH_CELL: 'research_cell',
+    BUILD_FABRIC: 'build_fabric',
+    CONNECT_CELL: 'connect_cell',
+    ATTACK_ENEMY: 'attack_enemy'
+};
+
+export {ResourceTypeNames, getRandomType, CellResourceItem, CellTypes, RaceProcesses};

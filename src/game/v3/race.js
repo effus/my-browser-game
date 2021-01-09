@@ -1,6 +1,6 @@
 import {Helper} from '../helper';
 import Bus from '../bus.js';
-import { CellTypes } from './resource';
+import { CellTypes, RaceProcesses } from './resource';
 
 if (typeof window.Bus === 'undefined') {
     window.Bus = Bus;
@@ -20,13 +20,6 @@ const RaceTypes = {
     BEE: 'bee'
 };
 
-const RaceProcesses = {
-    RESEARCH_CELL: 'research_cell',
-    BUILD_FABRIC: 'build_fabric',
-    CONNECT_CELL: 'connect_cell',
-    ATTACK_ENEMY: 'attack_enemy'
-};
-
 const getRandomType = () => {
     const types = Object.keys(RaceTypes);
     const rand = Helper.randomizer(types.length);
@@ -36,10 +29,10 @@ const getRandomType = () => {
 
 class RaceProps {
     constructor() {
-        this.hardworking = Helper.randomizer(10);
-        this.research = Helper.randomizer(10);
-        this.diplomacy = Helper.randomizer(10);
-        this.agressive = Helper.randomizer(10);
+        this.hardworking = Helper.randomizer(9) + 1;
+        this.research = Helper.randomizer(9) + 1;
+        this.diplomacy = Helper.randomizer(9) + 1;
+        this.agressive = Helper.randomizer(9) + 1;
         this.preferences = this.getPreferences();
     }
     getPreferences() {
@@ -56,7 +49,12 @@ class RaceProps {
         return baseSort;
     }
     getIncrementForProcess(process) {
-        return this[process];
+        let mapping = {};
+        mapping[RaceProcesses.RESEARCH_CELL] = 'research';
+        mapping[RaceProcesses.BUILD_FABRIC] = 'hardworking';
+        mapping[RaceProcesses.CONNECT_CELL] = 'diplomacy';
+        mapping[RaceProcesses.ATTACK_ENEMY] = 'agressive';
+        return this[mapping[process]];
     }
 };
 
@@ -77,9 +75,9 @@ class Race {
         window.Bus.$on('i-am-next', (payload) => {
             this.onCellIAmNextResponse(payload);
         });
-        window.Bus.$on('cell-process-decline', this.onCellProcessDecline);
-        window.Bus.$on('cell-proceed', this.onCellProceed);
-        window.Bus.$on('resources-pack', this.onReceiveResourcesPack);
+        window.Bus.$on('cell-process-decline', (p) => this.onCellProcessDecline(p));
+        window.Bus.$on('cell-proceed', (p) => this.onCellProceed(p));
+        window.Bus.$on('resources-pack', (p) => this.onReceiveResourcesPack(p));
     }
     whatNext() {
         if (this.process === null) {
@@ -99,31 +97,20 @@ class Race {
         this.process = process;
         this.target = target;
     }
+
+    /**
+     * main algorythm to choose next target cell
+     */
     getTarget() {
-
         const prefs = this.props.getPreferences();
-
-        const calculateMultipier = (process) => {
-            let m = 0.2;
-            for (let i in prefs) {
-                if (prefs[i] === process) {
-                    break;
-                }
-                m += 0.2;
-            }
-            return m;
-        };
-
         if (this.targetStack.length === 0) {
             console.log('getTarget empty');
             return null;
         }
-        const calculateDistantion = (point1, point2) => {
-            return Math.sqrt( Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2) , 2);;
-        }
         let stack = this.targetStack.map((item) => {
             return {
-                value: calculateDistantion(item.coords, this.coords) * calculateMultipier(item.process, prefs),
+                value: Helper.calculateDistantion(item.coords, this.coords) * 
+                    Helper.calculatePreferenceMultipier(item.process, prefs),
                 coords: item.coords,
                 process: item.process
             }
@@ -135,11 +122,10 @@ class Race {
         const firstValue = stack[0].value;
         stack = stack.filter(item => item.value <= firstValue);
         let target = stack[0];
-        /*if (stack.length > 1) {
+        if (stack.length > 1) {
             const rand = Helper.randomizer(stack.length);
             target = stack[rand];
-        }*/
-        console.log('getTarget', target);
+        }
         return target;
     }
     clearStack() {
@@ -178,9 +164,13 @@ class Race {
      * response from cell after request 'cell-process' if cell fully proceed
      * so its required to find new targets
      */
-    onCellProceed() {
+    onCellProceed(payload) {
+        if (parseInt(payload.to) !== this.id.i) {
+            return;
+        }
         this.setProcess(null, null);
         this.clearStack();
+        
     }
     onReceiveResourcesPack(payload) {
         //@todo

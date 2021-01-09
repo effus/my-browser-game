@@ -1,4 +1,4 @@
-import {CellResourceItem, CellTypes} from './resource';
+import {CellResourceItem, CellTypes, RaceProcesses} from './resource';
 import {CellRace} from './race';
 
 /**
@@ -25,6 +25,7 @@ class CellEngine {
     changeToRandomResource() {
         this.type = CellTypes.RESOURCE;
         this.resource = new CellResourceItem();
+        console.log('changeToRandomResource', this.resource);
     }
     setOwner(raceId) {
         this.owner = raceId;
@@ -68,7 +69,24 @@ class CellEngine {
      * @param {*} increment 
      */
     tryProceed(raceId, process, increment) {
-        throw Error('not implemented');
+        if (this.type === CellTypes.RESOURCE && this.owner === null && process === RaceProcesses.BUILD_FABRIC) {
+            this.progress += increment;
+        } else if (this.type === CellTypes.SHADOW && process === RaceProcesses.RESEARCH_CELL) {
+            this.progress += increment;
+        } else if (this.type === CellTypes.RESOURCE && this.owner === raceId && process === RaceProcesses.CONNECT_CELL) {
+            this.progress += increment;
+        } else {
+            console.log('tryProceed error');
+            return false;
+        }
+        if (this.progress >= 100) {
+            return true;
+        }
+        //console.log('tryProceed', raceId, process, this.progress);
+        return null;
+    }
+    resetProgress() {
+        this.progress = 0;
     }
     /**
      * calculate resources for owner
