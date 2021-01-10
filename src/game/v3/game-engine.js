@@ -55,6 +55,7 @@ class GameEngine {
             // process target
             window.Bus.$emit('cell-process', {
                 raceId: i,
+                raceColor: this.races.get(i).color,
                 coords: next.target,
                 process: next.process,
                 increment: next.increment
@@ -65,6 +66,9 @@ class GameEngine {
             });
         }
         this.isTickInProgress = false;
+    }
+    getRaceInfo() {
+        return this.races.list;
     }
 };
 

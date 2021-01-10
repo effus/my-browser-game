@@ -11,12 +11,13 @@ class CellEngine {
         this.race = null;
         this.resource = null;
         this.owner = null;
+        this.ownerColor = null;
         this.progress = 0;
     }
     changeToRace(i, raceType, color) {
         this.type = CellTypes.RACE;
         this.race = new CellRace(i, raceType, color);
-        this.setOwner(i);
+        this.setOwner(i, color);
     }
     changeToResource(resourceType) {
         this.type = CellTypes.RESOURCE;
@@ -27,14 +28,18 @@ class CellEngine {
         this.resource = new CellResourceItem();
         console.log('changeToRandomResource', this.resource);
     }
-    setOwner(raceId) {
+    setOwner(raceId, color) {
         this.owner = raceId;
+        this.ownerColor = color;
     }
     getStyles() {
         let r = [];
         r.push(this.type);
         if (this.type === CellTypes.RESOURCE) {
             r.push(this.resource.getStyle());
+            if (this.ownerColor) {
+                r.push(this.ownerColor);
+            }
         } else if (this.type === CellTypes.RACE) {
             r.push(this.race.getStyle());
         }
@@ -44,9 +49,11 @@ class CellEngine {
         return this.coords.x === coords.x && this.coords.y === coords.y;
     }
     checkAmINext(raceId) {
-        if (this.type = CellTypes.SHADOW) {
+        if (this.type === CellTypes.SHADOW) {
+            console.log('checkAmINext:SHADOW');
             return true;
-        } else if (this.type = CellTypes.RESOURCE && this.owner !== raceId) {
+        } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId)) {
+            console.log('checkAmINext:RES race!=owner', raceId, this.owner);
             return true;
         } /* else if (this.type = CellTypes.RACE && this.owner !== raceId) {
             return true;
@@ -84,6 +91,16 @@ class CellEngine {
         }
         //console.log('tryProceed', raceId, process, this.progress);
         return null;
+    }
+    onProceedComplete(process, raceId, ownerColor) {
+        this.resetProgress();
+        if (this.type === CellTypes.SHADOW) {
+            this.changeToRandomResource();
+        } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.BUILD_FABRIC) {
+            this.setOwner(raceId, ownerColor);
+        } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.CONNECT_CELL) {
+            this.setOwner(raceId, ownerColor);
+        }
     }
     resetProgress() {
         this.progress = 0;

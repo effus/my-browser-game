@@ -72,8 +72,7 @@ export default {
                     const proceedResult = this.cellEngine.tryProceed(payload.raceId, payload.process, payload.increment);
                     if (proceedResult === true) { // process completed
                         this.cellProgress = 0;
-                        this.cellEngine.changeToRandomResource();
-                        this.cellEngine.resetProgress();
+                        this.cellEngine.onProceedComplete(payload.process, payload.raceId, payload.raceColor);
                         this.updateStyles();
                         //console.log('onCellProcess COMPLETE!', this.cellEngine.resource);
                         window.Bus.$emit('cell-proceed', {
@@ -91,6 +90,8 @@ export default {
                             to: payload.raceId,
                             process: payload.process
                         });
+                    } else {
+                        console.log('onCellProcess', payload.process);
                     }
                     this.cellProgress = this.cellEngine.progress;
                     /*console.log('onCellProcess', 
@@ -139,7 +140,16 @@ export default {
     height: 100%;
     border-right: 1px solid #232222;
     border-bottom: 1px solid #111;
-    background-color: #909090;
+    background-color: #333333;
+    &.grey {
+        background-color: grey;
+    }
+    &.white {
+        background-color: white;
+    }
+    &.red {
+        background-color: #ffa3a3;
+    }
 }
 .shadow {
     background-color: #000;
@@ -177,6 +187,10 @@ export default {
     //background-color: rgb(0, 174, 255);
 }
 .race {
+    border: 1px solid gold;
+    box-sizing: border-box;
+    width: calc(100% - 1px);
+    height: calc(100% - 1px);
     &.mask {
         background-image: url('../assets/icons/tribal-mask.svg');
     }
@@ -209,15 +223,6 @@ export default {
     }
     &.bee {
         background-image: url('../assets/icons/bee.svg');
-    }
-    &.white {
-        background-color: #fff;
-    }
-    &.grey {
-        background-color: #ccc;
-    }
-    &.red {
-        background-color: #ffa3a3;
     }
 }
 .progress {

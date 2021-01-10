@@ -29,8 +29,8 @@ const getRandomType = () => {
 
 class RaceProps {
     constructor() {
-        this.hardworking = Helper.randomizer(9) + 1;
-        this.research = Helper.randomizer(9) + 1;
+        this.hardworking = 10;//Helper.randomizer(9) + 1;
+        this.research = 10;//Helper.randomizer(9) + 1;
         this.diplomacy = Helper.randomizer(9) + 1;
         this.agressive = Helper.randomizer(9) + 1;
         this.preferences = this.getPreferences();

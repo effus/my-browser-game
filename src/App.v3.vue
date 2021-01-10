@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- base-info :object="selectedObject"></base-info -->
+    <base-info :ticks="tickCounter" :races="racesInfo"></base-info>
     <!-- base-options v-if="!game" v-on:setup="onSetup"></base-options -->
     <!-- base-loading v-if="game && game.isGenerating"></base-loading -->
     <base-map :width="map.size" :height="map.size"></base-map>
@@ -24,8 +24,8 @@ export default {
     data: () => {
         return {
             map: {
-              raceCount: 2,
-              size: 20
+              raceCount: 1,
+              size: 3
             },
             info: null,
             gameEngine: null,
@@ -48,7 +48,6 @@ export default {
       nextTick() {
         try {
           this.tickCounter++;
-          console.log('nextTick started', this.tickCounter);
           this.gameEngine.nextTick();
         } catch (e) {
           this.$timer.stop('nextTick');
@@ -58,6 +57,11 @@ export default {
       onGlobalError(e) {
         console.error('Global error', e);
         this.$timer.stop('nextTick');
+      }
+    },
+    computed: {
+      racesInfo() {
+        return this.gameEngine ? this.gameEngine.getRaceInfo() : [];
       }
     }
 }
@@ -74,5 +78,7 @@ body {
   color: #2c3e50;
   display: grid;
   grid-gap: 10px;
+  grid-template-rows: 24px 1fr;
+  grid-template-columns: 1fr;
 }
 </style>
