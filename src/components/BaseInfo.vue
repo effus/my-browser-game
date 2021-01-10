@@ -4,9 +4,9 @@
             <span>Ticks:</span>
             <span>{{ticks}}</span>
         </div>
-        <div class="race-info" v-for="race in races" :key="race.id">
+        <div class="race-info" v-for="race in races" :key="race.id.i">
             <!-- span>{{race}}</span-->
-            <div>{{race.type}}</div>
+            <div>{{race.type}} <span v-if="race.process">({{race.process}})</span></div>
             <span>HW:{{race.props.hardworking}}</span>
             <span>RS:{{race.props.research}}</span>
             <span>DI:{{race.props.diplomacy}}</span>

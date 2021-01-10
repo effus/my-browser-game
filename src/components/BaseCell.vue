@@ -141,14 +141,17 @@ export default {
     border-right: 1px solid #232222;
     border-bottom: 1px solid #111;
     background-color: #333333;
-    &.grey {
-        background-color: grey;
+    &.yellow {
+        background-color: yellow;
     }
     &.white {
         background-color: white;
     }
     &.red {
         background-color: #ffa3a3;
+    }
+    &.blue {
+        background-color: #209dff;
     }
 }
 .shadow {
