@@ -6,8 +6,9 @@
         </div>
         <div class="race-info" v-for="race in races" :key="race.id.i">
             <div class="race-type">
-                {{race.type}}
-                <span v-if="race.process">({{race.process}})</span>
+                <span class="name" :class="race.color">{{race.type}}</span>
+                <span class="process">{{processLabel(race.process)}}</span>
+                <span class="cells">Owned: {{race.cellsCount}}</span>
             </div>
             <div class="skills-row">
                 <span>HardWork:</span> 
@@ -44,6 +45,7 @@
 </template>
 
 <script>
+import {RaceProcessLabels} from '../game/v3/resource.js';
 export default {
     components: {
     },
@@ -54,6 +56,11 @@ export default {
         },
         races: {
             type: Array|Object
+        }
+    },
+    methods: {
+        processLabel(str) {
+            return str ? RaceProcessLabels[str] : 'Thinking...';
         }
     },
     computed: {
@@ -71,10 +78,11 @@ export default {
 </script>
 
 <style lang="scss">
+@import '../game/v3/colors.scss';
 .info {
     font-size: 12px;
     display: grid;
-    grid-template-columns: 1fr 3fr 3fr 2fr 2fr 2fr;
+    grid-template-columns: 1fr 3fr 3fr 3fr 3fr;
     color: #53779b;
     background-color: rgb(24, 24, 14);
     grid-gap: 5px;
@@ -87,6 +95,49 @@ export default {
         .race-type {
             color: #fff;
             margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            .race-type {
+                font-weight: 700;
+            }
+            .process {
+                padding: 0 8px;
+                background-color: rgb(0, 85, 119);
+                border-radius: 4px;
+            }
+            .name {
+                &.yellow {
+                    color: $yellow;
+                }
+                &.white {
+                    color: $white;
+                }
+                &.red {
+                    color: $red;
+                }
+                &.blue {
+                    color: $blue;
+                }
+                &.brown {
+                    color: $brown;
+                }
+                &.purple {
+                    color: $purple;
+                }
+                &.orange {
+                    color: $orange;
+                }
+                &.dark-green {
+                    color: $dark-green;
+                }
+                &.light-green {
+                    color: $light-green;
+                }
+                &.pink {
+                    color: $pink;
+                }
+            }
         }
         .resources {
             margin-top: 5px;

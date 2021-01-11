@@ -114,4 +114,17 @@ const RaceProcesses = {
     ATTACK_ENEMY: 'attack_enemy'
 };
 
-export {ResourceTypeNames, getRandomType, CellResourceItem, CellTypes, RaceProcesses};
+let RaceProcessLabels = {};
+RaceProcessLabels[RaceProcesses.RESEARCH_CELL] = 'Research new cell';
+RaceProcessLabels[RaceProcesses.BUILD_FABRIC] = 'Build fabric';
+RaceProcessLabels[RaceProcesses.CONNECT_CELL] = 'Connect cell';
+RaceProcessLabels[RaceProcesses.ATTACK_ENEMY] = 'Attack cell';
+
+const CellProceedResults = {
+    RESOURCE_RESEARCHED: 'rr',
+    FABRIC_BUILDED: 'fb',
+    CELL_CONNECTED: 'cc',
+    CELL_DESTROYED: 'cd'
+};
+
+export {ResourceTypeNames, getRandomType, CellResourceItem, CellTypes, RaceProcesses, CellProceedResults, RaceProcessLabels};

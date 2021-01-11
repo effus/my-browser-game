@@ -1,4 +1,4 @@
-import {CellResourceItem, CellTypes, RaceProcesses} from './resource';
+import {CellResourceItem, CellTypes, RaceProcesses, CellProceedResults} from './resource';
 import {CellRace} from './race';
 
 /**
@@ -24,6 +24,13 @@ class CellEngine {
         this.race = new CellRace(i, raceType, color);
         this.setOwner(i, color);
     }
+    destroyCell() {
+        this.type = CellTypes.SHADOW;
+        this.resource = null;
+        this.owner = null;
+        this.ownerColor = null;
+        this.sendedAt = null;
+    }
     changeToResource(resourceType) {
         this.type = CellTypes.RESOURCE;
         this.resource = new CellResourceItem(resourceType);
@@ -35,6 +42,9 @@ class CellEngine {
     setOwner(raceId, color) {
         this.owner = raceId !== null ? parseInt(raceId) : null;
         this.ownerColor = color;
+    }
+    resetProgress() {
+        this.progress = 0;
     }
     getStyles() {
         let r = [];
@@ -100,21 +110,35 @@ class CellEngine {
         }
         return null;
     }
+
+    /**
+     * handler for operations after process completed
+     * @param {*} process 
+     * @param {*} raceId 
+     * @param {*} ownerColor 
+     */
     onProceedComplete(process, raceId, ownerColor) {
         this.resetProgress();
         if (this.type === CellTypes.SHADOW) {
             this.changeToRandomResource();
+            return {result: CellProceedResults.RESOURCE_RESEARCHED};
+
         } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.BUILD_FABRIC) {
             this.setOwner(raceId, ownerColor);
+            return {result: CellProceedResults.FABRIC_BUILDED, newOwner: raceId};
+
         } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.CONNECT_CELL) {
+            const oldOwner = this.owner;
             this.setOwner(raceId, ownerColor);
+            return {result: CellProceedResults.CELL_CONNECTED, oldOwner: oldOwner, newOwner: this.raceId};
+
         } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.ATTACK_ENEMY) {
-            this.setOwner(raceId, ownerColor);
+            const oldOwner = this.owner;
+            this.destroyCell();
+            return {result:CellProceedResults.CELL_DESTROYED, oldOwner: oldOwner};
         }
     }
-    resetProgress() {
-        this.progress = 0;
-    }
+
     /**
      * get resource scores for owner
      */

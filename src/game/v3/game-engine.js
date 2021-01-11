@@ -9,6 +9,7 @@ if (typeof window.Bus === 'undefined') {
 class GameEngine {
     constructor(raceCount, mapSize) {
         this.races = new Races();
+        this.mapSize = mapSize;
         console.log('GameEngine create');
         for (let i = 0; i < raceCount; i++) {
             const race = new Race(i, raceCount, mapSize);
@@ -36,6 +37,12 @@ class GameEngine {
                 tick: tickNumber
             });
             this.races.get(i).decreaseResources();
+            if (this.checkWinner(this.races.get(i)) === true) {
+                window.Bus.$emit('we-got-winner', {
+                    winner: this.races.get(i)
+                });
+                break;
+            }
             let next = this.races.get(i).whatNext(); // get a target from previous tick
             if (!next.process) {
                 // no processed targets
@@ -71,6 +78,12 @@ class GameEngine {
     }
     getRaceInfo() {
         return this.races.list;
+    }
+    checkWinner(race) {
+        if (race.cellsCount >= this.mapSize * this.mapSize - this.races.list.length) {
+            return true;
+        }
+        return false;
     }
 };
 

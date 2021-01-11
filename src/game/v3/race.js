@@ -107,6 +107,8 @@ class Race {
         window.Bus.$on('cell-process-decline', (p) => this.onCellProcessDecline(p));
         window.Bus.$on('cell-proceed', (p) => this.onCellProceed(p));
         window.Bus.$on('resources-pack', (p) => this.onReceiveResourcesPack(p));
+        window.Bus.$on('decrease-cell-count', (p) => this.onDecreaseCellCount(p));
+        window.Bus.$on('increase-cell-count', (p) => this.onIncreaseCellCount(p));
     }
     whatNext() {
         if (this.process === null) {
@@ -243,6 +245,20 @@ class Race {
     }
     decreaseResources() {
         this.resources.decrease(this.cellsCount);
+    }
+    onDecreaseCellCount(payload) {
+        if (parseInt(payload.to) !== this.id.i) {
+            return;
+        }
+        if (this.cellsCount > 0) {
+            this.cellsCount--;
+        }
+    }
+    onIncreaseCellCount(payload) {
+        if (parseInt(payload.to) !== this.id.i) {
+            return;
+        }
+        this.cellsCount++;
     }
 };
 

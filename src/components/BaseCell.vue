@@ -1,6 +1,6 @@
 <template>
     <div class="cell" :class="styles" @click="onClick">
-        <span class="progress" :style="getProgressStyle"></span>
+        <span class="progress" :class="progressOwner" :style="getProgressStyle"></span>
     </div>
 </template>
 
@@ -8,6 +8,7 @@
 import CellEngine from '../game/v3/cell-engine';
 import {mixin as VueTimers} from 'vue-timers';
 import Bus from '../game/bus.js';
+import { CellProceedResults } from '../game/v3/resource';
 
 if (typeof window.Bus === 'undefined') {
     window.Bus = Bus;
@@ -34,6 +35,7 @@ export default {
         return {
             cellEngine: null,
             styles: '',
+            progressOwner: '',
             cellProgress: 0,
             isProcessing: false
         }
@@ -88,13 +90,26 @@ export default {
                     const proceedResult = this.cellEngine.tryProceed(payload.raceId, payload.process, payload.increment);
                     if (proceedResult === true) { // process completed
                         this.cellProgress = 0;
-                        this.cellEngine.onProceedComplete(payload.process, payload.raceId, payload.raceColor);
+                        const procResult = this.cellEngine.onProceedComplete(payload.process, payload.raceId, payload.raceColor);
                         this.updateStyles();
                         window.Bus.$emit('cell-proceed', {
                             from: this.cellEngine.getSelfInfo(),
                             to: payload.raceId,
-                            process: payload.process
+                            process: payload.process,
+                            result: procResult
                         });
+                        if (procResult.result === CellProceedResults.CELL_CONNECTED || procResult.result === CellProceedResults.CELL_DESTROYED) {
+                            window.Bus.$emit('decrease-cell-count', {
+                                from: this.cellEngine.getSelfInfo(),
+                                to: procResult.oldOwner
+                            });
+                        } 
+                        if (procResult.result === CellProceedResults.FABRIC_BUILDED || procResult.result === CellProceedResults.CELL_CONNECTED) {
+                            window.Bus.$emit('increase-cell-count', {
+                                from: this.cellEngine.getSelfInfo(),
+                                to: procResult.newOwner
+                            });
+                        }
                         
                     } else if (proceedResult === false) { // process declined
                         window.Bus.$emit('cell-process-decline', {
@@ -104,6 +119,7 @@ export default {
                         });
                     } else {
                         //console.log('onCellProcess', payload.process);
+                        this.progressOwner = payload.raceColor;
                     }
                     this.cellProgress = this.cellEngine.progress;
 
@@ -142,6 +158,7 @@ export default {
 </script>
 
 <style lang="scss">
+@import '../game/v3/colors.scss';
 .cell {
     font-size: 12px;
     position: relative;
@@ -153,34 +170,34 @@ export default {
     border-bottom: 1px solid #111;
     background-color: #333333;
     &.yellow {
-        background-color: rgb(121, 121, 0);
+        background-color: $yellow;
     }
     &.white {
-        background-color: white;
+        background-color: $white;
     }
     &.red {
-        background-color: #ff1010;
+        background-color: $red;
     }
     &.blue {
-        background-color: #209dff;
+        background-color: $blue;
     }
     &.brown {
-        background-color: #7c4200;
+        background-color: $brown;
     }
     &.purple {
-        background-color: #a70090;
+        background-color: $purple;
     }
     &.orange {
-        background-color: #ff8c00;
+        background-color: $orange;
     }
     &.dark-green {
-        background-color: #006e06;
+        background-color: $dark-green;
     }
     &.light-green {
-        background-color: #65ff6c;
+        background-color: $light-green;
     }
     &.pink {
-        background-color: #ff9e9e;
+        background-color: $pink;
     }
 }
 .shadow {
@@ -266,7 +283,37 @@ export default {
     position: absolute;
     top: 30px;
     left: 0;
-    background: linear-gradient(to top, rgba(255, 255, 255, 0), #00c029);
+    &.yellow {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $yellow);
+    }
+    &.white {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $white);
+    }
+    &.red {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $red);
+    }
+    &.blue {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $blue);
+    }
+    &.brown {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $brown);
+    }
+    &.purple {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $purple);
+    }
+    &.orange {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $orange);
+    }
+    &.dark-green {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $dark-green);
+    }
+    &.light-green {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $light-green);
+    }
+    &.pink {
+        background: linear-gradient(to top, rgba(255, 255, 255, 0), $pink);
+    }
+
 }
 
 </style>
