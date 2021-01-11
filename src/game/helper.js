@@ -17,7 +17,7 @@ const Helper = {
         return {x, y};
     },
     getRandomColor() {
-        const colors = ['yellow', 'white', 'red', 'blue'];
+        const colors = ['yellow', 'white', 'red', 'blue', 'brown', 'purple', 'orange', 'dark-green', 'light-green', 'pink'];
         const rand = this.randomizer(colors.length);
         return colors[rand];
     },

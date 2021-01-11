@@ -33,7 +33,7 @@ class CellEngine {
         this.resource = new CellResourceItem();
     }
     setOwner(raceId, color) {
-        this.owner = raceId;
+        this.owner = raceId !== null ? parseInt(raceId) : null;
         this.ownerColor = color;
     }
     getStyles() {
@@ -55,11 +55,11 @@ class CellEngine {
     checkAmINext(raceId) {
         if (this.type === CellTypes.SHADOW) {
             return true;
+        } else if (this.type === CellTypes.RESOURCE && this.owner === null) {
+            return true;
         } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId)) {
             return true;
-        } /* else if (this.type = CellTypes.RACE && this.owner !== raceId) {
-            return true;
-        }*/
+        }
     }
     getSelfInfo() {
         return {
@@ -84,6 +84,8 @@ class CellEngine {
             this.progress += increment;
         } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId) && process === RaceProcesses.CONNECT_CELL) {
             this.progress += increment;
+        } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId) && process === RaceProcesses.ATTACK_ENEMY) {
+            this.progress += increment;
         } else {
             this.conflictsCount++;
             console.error('tryProceed error: incorrect process for resource', process, this.resource, this.owner);
@@ -105,6 +107,8 @@ class CellEngine {
         } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.BUILD_FABRIC) {
             this.setOwner(raceId, ownerColor);
         } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.CONNECT_CELL) {
+            this.setOwner(raceId, ownerColor);
+        } else if (this.type === CellTypes.RESOURCE && process === RaceProcesses.ATTACK_ENEMY) {
             this.setOwner(raceId, ownerColor);
         }
     }

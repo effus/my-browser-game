@@ -34,7 +34,8 @@ export default {
         return {
             cellEngine: null,
             styles: '',
-            cellProgress: 0
+            cellProgress: 0,
+            isProcessing: false
         }
     },
     mounted() {
@@ -69,7 +70,7 @@ export default {
          * get 'who-is-next' request and send answer if needed
          */
         onWhoIsNext(payload) {
-            if (this.cellEngine.checkAmINext(payload.raceId) === true) {
+            if (this.cellEngine.checkAmINext(payload.raceId) === true && this.isProcessing === false) {
                 window.Bus.$emit('i-am-next', {
                     from: this.cellEngine.getSelfInfo(),
                     to: payload.raceId
@@ -81,7 +82,8 @@ export default {
          * get 'cell-process' request and try to proceed
          */
         onCellProcess(payload) {
-            if (this.cellEngine.checkCoords(payload.coords)) {
+            if (this.cellEngine.checkCoords(payload.coords) && this.isProcessing === false) {
+                this.isProcessing = true;
                 try {
                     const proceedResult = this.cellEngine.tryProceed(payload.raceId, payload.process, payload.increment);
                     if (proceedResult === true) { // process completed
@@ -104,11 +106,12 @@ export default {
                         //console.log('onCellProcess', payload.process);
                     }
                     this.cellProgress = this.cellEngine.progress;
-                    
+
                 } catch (e) {
                     console.error('onCellProcess.Exception', e, payload);
                     window.Bus.$emit('global-error', {e});
                 }
+                this.isProcessing = false;
             }
         },
         onGetResources(payload) {
@@ -150,16 +153,34 @@ export default {
     border-bottom: 1px solid #111;
     background-color: #333333;
     &.yellow {
-        background-color: yellow;
+        background-color: rgb(121, 121, 0);
     }
     &.white {
         background-color: white;
     }
     &.red {
-        background-color: #ffa3a3;
+        background-color: #ff1010;
     }
     &.blue {
         background-color: #209dff;
+    }
+    &.brown {
+        background-color: #7c4200;
+    }
+    &.purple {
+        background-color: #a70090;
+    }
+    &.orange {
+        background-color: #ff8c00;
+    }
+    &.dark-green {
+        background-color: #006e06;
+    }
+    &.light-green {
+        background-color: #65ff6c;
+    }
+    &.pink {
+        background-color: #ff9e9e;
     }
 }
 .shadow {

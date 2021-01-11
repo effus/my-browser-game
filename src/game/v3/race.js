@@ -133,7 +133,6 @@ class Race {
     getTarget() {
         const prefs = this.props.getPreferences();
         if (this.targetStack.length === 0) {
-            console.log('getTarget empty');
             return null;
         }
         let stack = this.targetStack.map((item) => {
@@ -190,10 +189,11 @@ class Race {
      * response from cell after request 'cell-process' if cell can't be proceed;
      * so its required to repeat find targets
      */
-    onCellProcessDecline() {
+    onCellProcessDecline(payload) {
         this.setProcess(null, null);
         this.clearStack();
-        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-decline] from target');
+        console.debug('onCellProcessDecline', 'Race ' + this.id.i, payload);
+        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-decline] from target ' + payload.from.coords.x + ':' + payload.from.coords.y + ' about process: ' + payload.process);
     }
     /**
      * response from cell after request 'cell-process' if cell fully proceed
@@ -205,7 +205,7 @@ class Race {
         }
         this.setProcess(null, null);
         this.clearStack();
-        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-complete] from target');
+        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-complete] from target ' + payload.from.coords.x + ':' + payload.from.coords.y + ' about process: ' + payload.process);
         
     }
     onReceiveResourcesPack(payload) {
@@ -234,7 +234,6 @@ class Race {
                     return RaceProcesses.CONNECT_CELL;
                 }
             }
-            console.log('getProcessNameByCell', prefs, cellType, cellOwner);
             throw Error('Error in getProcessNameByCell: incorrect preferences');
         } else if (cellType === CellTypes.RESOURCE) {
             return RaceProcesses.BUILD_FABRIC;

@@ -51,12 +51,10 @@ class GameEngine {
                     this.races.get(i).setProcess(target.process, target.coords);
                     this.races.get(i).clearStack();
                 } else {
-                    console.log('race ' + i + ' sends who-is-next');
                     window.Bus.$emit('who-is-next', {
                         raceId: i,
                         coords: this.races.get(i).coords
                     });
-                    window.Bus.$emit('game-log', 'Race ' + i + ' search next target');
                     continue;
                 }
             }
