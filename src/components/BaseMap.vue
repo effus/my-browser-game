@@ -7,6 +7,7 @@
                     :key="x + '.' + y"
                     :x="x"
                     :y="y"
+                    :ticks="ticks"
                     v-on:click="onCellClick"
                 ></base-cell>
             </template>
@@ -32,6 +33,9 @@ export default {
         cellWidth: {
             type: Number,
             default: 30
+        },
+        ticks: {
+            type: Number
         }
     },
     computed: {
@@ -58,5 +62,6 @@ export default {
 .map {
     display: grid;
     grid-gap: 0;
+    padding: 5px;
 }
 </style>

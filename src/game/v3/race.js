@@ -44,7 +44,7 @@ class RaceProps {
         ];
         baseSort.sort();
         for (let i in baseSort) {
-            baseSort[i] = baseSort[i].replace(/[0-9]_/g, '');
+            baseSort[i] = baseSort[i].replace(/(\d+|\d+\.\d+)_/g, '');
         }
         return baseSort;
     }
@@ -56,10 +56,40 @@ class RaceProps {
         mapping[RaceProcesses.ATTACK_ENEMY] = 'agressive';
         return this[mapping[process]];
     }
+    addResourcePack(pack) {
+        this.hardworking += pack.hardworking;
+        this.research += pack.research;
+        this.diplomacy += pack.diplomacy;
+        this.agressive += pack.agressive;
+    }
 };
 
+/**
+ * resources of race
+ */
+class RaceResources {
+    constructor() {
+        this.food = 100;
+        this.water = 100;
+        this.metals = 100;
+        this.stones = 100;
+    }
+    addResourcePack(pack) {
+        this.food += pack.meal + pack.flour;
+        this.water += pack.water;
+        this.metals += pack.gold + pack.iron;
+        this.stones += pack.stone;
+    }
+    decrease(cellCount) {
+        this.food -= 0.1 * cellCount;
+        this.water -= 0.1 * cellCount;
+        this.metals -= 0.1 * cellCount;
+        this.stones -= 0.1 * cellCount;
+    }
+}
+
  /**
-  * класс расы для игрового движка
+  * race game engine
   */
 class Race {
     constructor(i, n, mapSize) {
@@ -68,13 +98,12 @@ class Race {
         this.type = getRandomType();
         this.props = new RaceProps();
         this.color = Helper.getRandomColor();
-        this.resources = [];
+        this.resources = new RaceResources();
         this.process = null;
         this.target = null;
         this.targetStack = [];
-        window.Bus.$on('i-am-next', (payload) => {
-            this.onCellIAmNextResponse(payload);
-        });
+        this.cellsCount = 1;
+        window.Bus.$on('i-am-next', (payload) => this.onCellIAmNextResponse(payload));
         window.Bus.$on('cell-process-decline', (p) => this.onCellProcessDecline(p));
         window.Bus.$on('cell-proceed', (p) => this.onCellProceed(p));
         window.Bus.$on('resources-pack', (p) => this.onReceiveResourcesPack(p));
@@ -145,12 +174,17 @@ class Race {
         if (parseInt(payload.from.owner) === this.id.i) {
             return false;
         }
-        const item = {
-            coords: payload.from.coords,
-            process: this.getProcessNameByCell(payload.from.type, payload.from.owner),
-            type: payload.from.type
-        };
-        this.targetStack.push(item);
+        try {
+            const item = {
+                coords: payload.from.coords,
+                process: this.getProcessNameByCell(payload.from.type, payload.from.owner),
+                type: payload.from.type
+            };
+            this.targetStack.push(item);
+        } catch (e) {
+            console.error('onCellIAmNextResponse exception', e);
+            window.Bus.$emit('global-error', {e});
+        }
     }
     /**
      * response from cell after request 'cell-process' if cell can't be proceed;
@@ -159,6 +193,7 @@ class Race {
     onCellProcessDecline() {
         this.setProcess(null, null);
         this.clearStack();
+        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-decline] from target');
     }
     /**
      * response from cell after request 'cell-process' if cell fully proceed
@@ -170,11 +205,15 @@ class Race {
         }
         this.setProcess(null, null);
         this.clearStack();
+        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-complete] from target');
         
     }
     onReceiveResourcesPack(payload) {
-        //@todo
-        throw Error('not inmplemented');
+        if (parseInt(payload.to) !== this.id.i) {
+            return;
+        }
+        this.resources.addResourcePack(payload.resources);
+        this.props.addResourcePack(payload.resources);
     }
     /**
      * define a process for target
@@ -184,19 +223,27 @@ class Race {
     getProcessNameByCell(cellType, cellOwner) {
         if (cellType === CellTypes.SHADOW) {
             return RaceProcesses.RESEARCH_CELL;
-        } else if (cellType === CellTypes.RESOURCE && cellOwner !== null && cellOwner !== this.id.i) {
+
+        } else if (cellType === CellTypes.RESOURCE && cellOwner !== null && parseInt(cellOwner) !== parseInt(this.id.i)) {
             const prefs = this.props.getPreferences();
-            for (let pref in prefs) {
-                if (pref === RaceProcesses.ATTACK_ENEMY) {
+            for (let i in prefs) {
+                if (prefs[i] === RaceProcesses.ATTACK_ENEMY) {
                     return RaceProcesses.ATTACK_ENEMY;
                 }
-                if (pref === RaceProcesses.CONNECT_CELL) {
+                if (prefs[i] === RaceProcesses.CONNECT_CELL) {
                     return RaceProcesses.CONNECT_CELL;
                 }
             }
+            console.log('getProcessNameByCell', prefs, cellType, cellOwner);
+            throw Error('Error in getProcessNameByCell: incorrect preferences');
         } else if (cellType === CellTypes.RESOURCE) {
             return RaceProcesses.BUILD_FABRIC;
+        } else {
+            throw Error('Error in getProcessNameByCell: unexpected cellType');
         }
+    }
+    decreaseResources() {
+        this.resources.decrease(this.cellsCount);
     }
 };
 

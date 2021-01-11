@@ -13,8 +13,13 @@ class CellEngine {
         this.owner = null;
         this.ownerColor = null;
         this.progress = 0;
+        this.sendedAt = null;
+        this.conflictsCount = 0;
     }
     changeToRace(i, raceType, color) {
+        if (this.race !== null) {
+            throw Error('Cell already occupied');
+        }
         this.type = CellTypes.RACE;
         this.race = new CellRace(i, raceType, color);
         this.setOwner(i, color);
@@ -26,7 +31,6 @@ class CellEngine {
     changeToRandomResource() {
         this.type = CellTypes.RESOURCE;
         this.resource = new CellResourceItem();
-        console.log('changeToRandomResource', this.resource);
     }
     setOwner(raceId, color) {
         this.owner = raceId;
@@ -50,10 +54,8 @@ class CellEngine {
     }
     checkAmINext(raceId) {
         if (this.type === CellTypes.SHADOW) {
-            console.log('checkAmINext:SHADOW');
             return true;
         } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId)) {
-            console.log('checkAmINext:RES race!=owner', raceId, this.owner);
             return true;
         } /* else if (this.type = CellTypes.RACE && this.owner !== raceId) {
             return true;
@@ -80,16 +82,20 @@ class CellEngine {
             this.progress += increment;
         } else if (this.type === CellTypes.SHADOW && process === RaceProcesses.RESEARCH_CELL) {
             this.progress += increment;
-        } else if (this.type === CellTypes.RESOURCE && this.owner === raceId && process === RaceProcesses.CONNECT_CELL) {
+        } else if (this.type === CellTypes.RESOURCE && parseInt(this.owner) !== parseInt(raceId) && process === RaceProcesses.CONNECT_CELL) {
             this.progress += increment;
         } else {
-            console.log('tryProceed error');
+            this.conflictsCount++;
+            console.error('tryProceed error: incorrect process for resource', process, this.resource, this.owner);
+            if (this.conflictsCount > 5) {
+                throw Error('tryProceed error: conflicted processes');
+            }
             return false;
         }
+        this.conflictsCount = 0;
         if (this.progress >= 100) {
             return true;
         }
-        //console.log('tryProceed', raceId, process, this.progress);
         return null;
     }
     onProceedComplete(process, raceId, ownerColor) {
@@ -106,10 +112,14 @@ class CellEngine {
         this.progress = 0;
     }
     /**
-     * calculate resources for owner
+     * get resource scores for owner
      */
-    getResourceForTick() {
-        throw Error('not implemented');
+    getResourceForTick(raceId, tick, controlTick) {
+        if (tick > this.sendedAt && tick <= controlTick+1 && this.owner !== null 
+            && parseInt(this.owner) === parseInt(raceId) && this.type === CellTypes.RESOURCE) {
+            this.sendedAt = tick;
+            return this.resource.score;
+        }
     }
 };
 

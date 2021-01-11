@@ -41,28 +41,28 @@ class ScoresIndex {
     constructor() {
         this.scores = {};
         this.scores[ResourceTypeNames.FIELD] = new ScoreItem({
-            flour: 1, meal: 0.5, water: 0.2, wood: 0.1, hardworking: 0.3, research: 0.7, diplomacy: 0.3
+            flour: 0.5, meal: 0.5, water: 0.1, wood: 0.1, diplomacy: 0.1
         });
         this.scores[ResourceTypeNames.FOREST] = new ScoreItem({
-            flour: 0.3, meal: 0.8, water: 0.2, wood: 1, hardworking: 0.3, research: 0.8, agressive: 0.3
+            flour: 0.1, meal: 0.2, water: 0.1, wood: 0.5, hardworking: 0.1, research: 0.2, agressive: 0.1
         });
         this.scores[ResourceTypeNames.GRUNT] = new ScoreItem({
-            flour: 0.5, meal: 0.1, water: 0.1, hardworking: 1, research: 0.2
+            flour: 0.2, meal: 0.1, water: 0.1, hardworking: 0.2, research: 0.1
         });
         this.scores[ResourceTypeNames.ROCK] = new ScoreItem({
-            iron: 0.2, gold: 0.2, stone: 0.6, hardworking: 1, research: 0.2
+            iron: 0.1, gold: 0.1, stone: 0.2, hardworking: 0.2, research: 0.1
         });
         this.scores[ResourceTypeNames.SAND] = new ScoreItem({
-            gold: 0.1, iron: 0.2, stone: 0.2, hardworking: 0.6, research: 0.4, agressive: 0.4
+            gold: 0.1, iron: 0.1, stone: 0.1, hardworking: 0.2, research: 0.2, agressive: 0.2
         });
         this.scores[ResourceTypeNames.SNOW] = new ScoreItem({
-            meal: 0.1, water: 0.7, hardworking: 0.3, research: 0.5, diplomacy: 0.2, agressive: 0.2
+            meal: 0.1, water: 0.2, hardworking: 0.1, research: 0.2, diplomacy: 0.1, agressive: 0.1
         });
         this.scores[ResourceTypeNames.SWAMP] = new ScoreItem({
-            meal: 0.3, water: 0.8, wood: 0.1, gold: 0.2, hardworking: 0.3, research: 0.3, agressive: 0.4
+            meal: 0.1, water: 0.2, wood: 0.1, gold: 0.1, hardworking: 0.1, research: 0.2, agressive: 0.1
         });
         this.scores[ResourceTypeNames.WATER] = new ScoreItem({
-            meal: 0.3, water: 1, hardworking: 0.2, research: 0.6, diplomacy: 0.2
+            meal: 0.1, water: 0.5, hardworking: 0.2, research: 0.1, diplomacy: 0.1
         });
     }
     get(type) {

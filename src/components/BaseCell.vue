@@ -25,6 +25,9 @@ export default {
         size: {
             type: Number,
             default: 30
+        },
+        ticks: {
+            type: Number
         }
     },
     data() {
@@ -35,37 +38,48 @@ export default {
         }
     },
     mounted() {
-        //console.log('cell mounted');
         this.cellEngine = new CellEngine({x: this.x, y: this.y});
         window.Bus.$on('set-race-base-cell', (p) => this.onSetRaceBaseCell(p));
         window.Bus.$on('who-is-next', (p) => this.onWhoIsNext(p));
         window.Bus.$on('cell-process', (p) => this.onCellProcess(p));
-        //window.Bus.$on('get-resources', (p) => this.onGetResources(p));
+        window.Bus.$on('get-resources', (p) => this.onGetResources(p));
         this.updateStyles();
-    },
-    timers: {
-        //update: { time: 5000, autostart: false, repeat: true }
     },
     methods: {
         updateStyles() {
             this.styles = this.cellEngine.getStyles();
         },
+
+        /**
+         * Occupying this cell by race
+         */
         onSetRaceBaseCell(payload) {
-            if (this.cellEngine.checkCoords(payload.coords)) {
-                //console.log('onSetRaceBaseCell', payload);
-                this.cellEngine.changeToRace(payload.raceId, payload.raceType, payload.color);
+            try {
+                if (this.cellEngine.checkCoords(payload.coords)) {
+                    this.cellEngine.changeToRace(payload.raceId, payload.raceType, payload.color);
+                }
+                this.updateStyles();
+            } catch (e) {
+                console.error('onSetRaceBaseCell', e);
+                window.Bus.$emit('global-error', {e});
             }
-            this.updateStyles();
         },
+
+        /**
+         * get 'who-is-next' request and send answer if needed
+         */
         onWhoIsNext(payload) {
             if (this.cellEngine.checkAmINext(payload.raceId) === true) {
-                //console.log('onWhoIsNext', 'send i-am-next');
                 window.Bus.$emit('i-am-next', {
                     from: this.cellEngine.getSelfInfo(),
                     to: payload.raceId
                 });
             }
         },
+
+        /**
+         * get 'cell-process' request and try to proceed
+         */
         onCellProcess(payload) {
             if (this.cellEngine.checkCoords(payload.coords)) {
                 try {
@@ -74,15 +88,11 @@ export default {
                         this.cellProgress = 0;
                         this.cellEngine.onProceedComplete(payload.process, payload.raceId, payload.raceColor);
                         this.updateStyles();
-                        //console.log('onCellProcess COMPLETE!', this.cellEngine.resource);
                         window.Bus.$emit('cell-proceed', {
                             from: this.cellEngine.getSelfInfo(),
                             to: payload.raceId,
                             process: payload.process
                         });
-                        /*window.Bus.$emit('stop', {
-                            from: this.cellEngine.getSelfInfo()
-                        });*/
                         
                     } else if (proceedResult === false) { // process declined
                         window.Bus.$emit('cell-process-decline', {
@@ -91,21 +101,19 @@ export default {
                             process: payload.process
                         });
                     } else {
-                        console.log('onCellProcess', payload.process);
+                        //console.log('onCellProcess', payload.process);
                     }
                     this.cellProgress = this.cellEngine.progress;
-                    /*console.log('onCellProcess', 
-                        'x:'+this.cellEngine.getSelfInfo().coords.x, 
-                        proceedResult, 
-                        this.cellEngine.progress);*/
+                    
                 } catch (e) {
+                    console.error('onCellProcess.Exception', e, payload);
                     window.Bus.$emit('global-error', {e});
                 }
             }
         },
         onGetResources(payload) {
-            const resources = this.cellEngine.getResourceForTick();
-            if (resource !== null) {
+            const resources = this.cellEngine.getResourceForTick(payload.raceId, payload.tick, this.ticks);
+            if (resources) {
                 window.Bus.$emit('resources-pack', {
                     from: this.cellEngine.getSelfInfo(),
                     to: this.cellEngine.owner,

@@ -21,14 +21,21 @@ class GameEngine {
                 color: race.color
             });
         }
+        window.Bus.$emit('game-log', 'Game started with ' + raceCount + ' races and map ' + mapSize + 'x' + mapSize);
         this.isTickInProgress = false;
     }
-    nextTick() {
+    nextTick(tickNumber) {
         if (this.isTickInProgress) {
             return;
         }
         this.isTickInProgress = true;
         for (let i in this.races.list) {
+            // collect resources from processed targets
+            window.Bus.$emit('get-resources', {
+                raceId: i,
+                tick: tickNumber
+            });
+            this.races.get(i).decreaseResources();
             let next = this.races.get(i).whatNext(); // get a target from previous tick
             if (!next.process) {
                 // no processed targets
@@ -49,6 +56,7 @@ class GameEngine {
                         raceId: i,
                         coords: this.races.get(i).coords
                     });
+                    window.Bus.$emit('game-log', 'Race ' + i + ' search next target');
                     continue;
                 }
             }
@@ -59,10 +67,6 @@ class GameEngine {
                 coords: next.target,
                 process: next.process,
                 increment: next.increment
-            });
-            // collect resources from processed targets
-            window.Bus.$emit('get-resources', {
-                raceId: i
             });
         }
         this.isTickInProgress = false;
