@@ -29,10 +29,19 @@ const getRandomType = () => {
 
 class RaceProps {
     constructor() {
-        this.hardworking = 10;//Helper.randomizer(9) + 1;
-        this.research = 10;//Helper.randomizer(9) + 1;
-        this.diplomacy = Helper.randomizer(9) + 1;
-        this.agressive = Helper.randomizer(9) + 1;
+        /* --- Race start balance 
+           If max random values                           If min random values
+        1: rand(20 - 2*4) + 2 = rand(12) + 2 = 14         0 + 2 = 2
+        2: rand((20-14) - 2*3) + 2 = 2                    0 + 2 = 2
+        3: rand((20-14-2) - 2*2) + 2 = 2                  0 + 2 = 2
+        3: 20-14-2-2 = 2                                  20-2-2-2 = 14 */
+        const summaryCount = 40;
+        const minimalValue = 5;
+        this.hardworking = Helper.randomizer(summaryCount - minimalValue * 4) + minimalValue;
+        this.research = Helper.randomizer((summaryCount - this.hardworking) - minimalValue * 3) + minimalValue;
+        this.diplomacy = Helper.randomizer((summaryCount - this.hardworking - this.research) - minimalValue * 2) + minimalValue;
+        this.agressive = summaryCount - this.hardworking - this.research - this.diplomacy;
+
         this.preferences = this.getPreferences();
     }
     getPreferences() {
@@ -207,7 +216,7 @@ class Race {
         }
         this.setProcess(null, null);
         this.clearStack();
-        window.Bus.$emit('game-log', 'Race ' + this.id.i + ' receive [process-complete] from target ' + payload.from.coords.x + ':' + payload.from.coords.y + ' about process: ' + payload.process);
+        window.Bus.$emit('game-log', Helper.humanLog('race receive cell proceed', this.color, this.type, payload.process));
         
     }
     onReceiveResourcesPack(payload) {

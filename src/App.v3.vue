@@ -1,11 +1,12 @@
 <template>
   <div id="app">
-    <base-info :ticks="tickCounter" :races="racesInfo"></base-info>
+    <base-info v-if="this.gameEngine !== null" :ticks="tickCounter" :races="racesInfo"></base-info>
+    <div v-else></div>
     <base-map :width="parseInt(map.size)" :height="parseInt(map.size)" :ticks="tickCounter"></base-map>
     <div class="buttons">
-      <button @click="onClickStart" :disabled="this.gameEngine !== null">Start</button>
-      <button @click="changeTab('log')">Game log</button>
-      <button @click="changeTab('config')">Config</button>
+      <button class="start-btn" @click="onClickStart" :disabled="this.gameEngine !== null">Start</button>
+      <button @click="changeTab('log')" :class="{active: tabs.isGameLogVisible}">Game log</button>
+      <button @click="changeTab('config')" :class="{active: tabs.isConfigVisible}">Config</button>
     </div>
     <base-game-log :is-visible="tabs.isGameLogVisible" :log="log"></base-game-log>
     <div class="config" v-if="tabs.isConfigVisible">
@@ -40,7 +41,7 @@ export default {
         return {
             map: {
               raceCount: 2,
-              size: 3
+              size: 5
             },
             info: null,
             gameEngine: null,
@@ -54,7 +55,7 @@ export default {
     },
     mounted() {
         window.Bus.$on('game-log', (str) => {
-          this.gameLog.push((new Date()).toLocaleTimeString() + ' ' + str);
+          this.gameLog.push('<span class="time">' + (new Date()).toLocaleTimeString() + '</span> ' + str);
         });
         window.Bus.$on('global-error', this.onGlobalError);
         window.Bus.$on('stop', (p) => {
@@ -108,6 +109,11 @@ export default {
       log() {
         return this.gameLog.slice().reverse();
       }
+    },
+    watch: {
+      tickTimeoutMs: function(val) {
+        this.timers.time = parseInt(val);
+      }
     }
 }
 </script>
@@ -152,6 +158,28 @@ body,html {
         }
         &:disabled:hover {
             box-shadow: none;
+        }
+        &.start-btn {
+          border-color: deeppink;
+          color: rgb(255, 140, 201);
+          padding: 5px 30px ;
+          &:hover {
+            border: 1px solid deeppink;
+            box-shadow: 0px 0px 8px deeppink;
+          }
+          &:disabled:hover {
+            box-shadow: none;
+            border: 1px solid rgb(133, 0, 0);
+            color: rgb(87, 0, 46);
+          }
+          &:disabled {
+            box-shadow: none;
+            border: 1px solid rgb(133, 0, 0);
+            color: rgb(87, 0, 46);
+          }
+        }
+        &.active {
+          box-shadow: 0px 0px 8px #fff;
         }
     }
   }

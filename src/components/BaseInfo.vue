@@ -107,6 +107,7 @@ export default {
                 border-radius: 4px;
             }
             .name {
+                font-size: 14px;
                 &.yellow {
                     color: $yellow;
                 }
